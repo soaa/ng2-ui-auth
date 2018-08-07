@@ -40,31 +40,31 @@ export class AuthService {
         return this.oauth.unlink<T>(provider, url);
     }
 
-    public isAuthenticated(): boolean {
-        return this.shared.isAuthenticated();
+    public async isAuthenticated(): Promise<boolean> {
+        return await this.shared.isAuthenticated();
     }
 
-    public getToken(): string | null {
-        return this.shared.getToken();
+    public async getToken(): Promise<string | null> {
+        return await this.shared.getToken();
     }
 
-    public setToken(token: string | object): void {
-        this.shared.setToken(token);
+    public async setToken(token: string | object): Promise<void> {
+        await this.shared.setToken(token);
     }
 
-    public removeToken(): void {
-        this.shared.removeToken();
+    public async removeToken(): Promise<void> {
+        await this.shared.removeToken();
     }
 
-    public getPayload(): any {
-        return this.shared.getPayload();
+    public async getPayload(): Promise<any> {
+        return await this.shared.getPayload();
     }
 
     public setStorageType(type: StorageType): boolean {
         return this.shared.setStorageType(type);
     }
 
-    public getExpirationDate(): Date | null {
-        return this.shared.getExpirationDate();
+    public async getExpirationDate(): Promise<Date | null> {
+        return await this.shared.getExpirationDate();
     }
 }

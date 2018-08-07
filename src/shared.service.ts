@@ -22,11 +22,12 @@ export class SharedService {
         private storage: StorageService,
         private config: ConfigService) { }
 
-    public getToken() {
-        return this.storage.get(this.tokenName);
+    public async getToken() {
+        return await this.storage.get(this.tokenName);
     }
 
-    public getPayload(token = this.getToken()) {
+    public async getPayload(token?: string) {
+        token = token || await this.getToken();
 
         if (token && token.split('.').length === 3) {
             try {
@@ -39,7 +40,7 @@ export class SharedService {
         }
     }
 
-    public setToken(response: string | object) {
+    public async setToken(response: string | object) {
         if (!response) {
             // console.warn('Can\'t set token without passing a value');
             return;
@@ -53,16 +54,17 @@ export class SharedService {
         }
 
         if (token) {
-            const expDate = this.getExpirationDate(token);
-            this.storage.set(this.tokenName, token, expDate ? expDate.toUTCString() : '');
+            const expDate = await this.getExpirationDate(token);
+            await this.storage.set(this.tokenName, token, expDate ? expDate.toUTCString() : '');
         }
     }
 
-    public removeToken() {
-        this.storage.remove(this.tokenName);
+    public async removeToken() {
+        await this.storage.remove(this.tokenName);
     }
 
-    public isAuthenticated(token = this.getToken()) {
+    public async isAuthenticated(token?: string) {
+        token = token || await this.getToken();
 
         // a token is present
         if (token) {
@@ -97,8 +99,9 @@ export class SharedService {
         return false;
     }
 
-    public getExpirationDate(token = this.getToken()) {
-        const payload = this.getPayload(token);
+    public async getExpirationDate(token?: string) {
+        token = token || await this.getToken();
+        const payload = await this.getPayload(token);
         if (payload && payload.exp && Math.round(new Date().getTime() / 1000) < payload.exp) {
             const date = new Date(0);
             date.setUTCSeconds(payload.exp);

@@ -5,11 +5,11 @@ import { StorageType, MEMORY, COOKIE, SESSION_COOKIE, LOCAL_STORAGE, SESSION_STO
 export abstract class StorageService {
     abstract updateStorageType(storageType: StorageType): boolean;
 
-    abstract get(key: string): string;
+    abstract async get(key: string): Promise<string>;
 
-    abstract set(key: string, value: string, date: string): void;
+    abstract async set(key: string, value: string, date: string): Promise<void>;
 
-    abstract remove(key: string): void;
+    abstract async remove(key: string): Promise<void>;
 }
 
 /**
@@ -36,7 +36,7 @@ export class BrowserStorageService extends StorageService {
         return true;
     }
 
-    public get(key: string) {
+    public async get(key: string) {
         switch (this.storageType) {
             case COOKIE:
             case SESSION_COOKIE:
@@ -52,7 +52,7 @@ export class BrowserStorageService extends StorageService {
         }
     }
 
-    public set(key: string, value: string, date: string) {
+    public async set(key: string, value: string, date: string) {
         switch (this.storageType) {
             case COOKIE:
             case SESSION_COOKIE:
@@ -71,7 +71,7 @@ export class BrowserStorageService extends StorageService {
         }
     }
 
-    public remove(key: string) {
+    public async remove(key: string) {
         switch (this.storageType) {
             case COOKIE:
             case SESSION_COOKIE:
