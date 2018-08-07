@@ -42,14 +42,16 @@ export class OauthService {
             ]).get(Oauth2Service);
 
         return provider.open<T>(this.config.options.providers[name], userData || {})
-            .pipe(tap((response) => {
+            .switchMap((response) => {
                 // this is for a scenario when someone wishes to opt out from
                 // satellizer's magic by doing authorization code exchange and
                 // saving a token manually.
                 if (this.config.options.providers[name].url) {
-                    this.shared.setToken(response);
+                    return Observable.fromPromise(this.shared.setToken(response)).map(() => response);
                 }
-            }));
+
+                return Observable.of(response);
+            });
     }
 
     public unlink<T>(

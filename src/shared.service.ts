@@ -23,11 +23,14 @@ export class SharedService {
         private config: ConfigService) { }
 
     public async getToken() {
-        return await this.storage.get(this.tokenName);
+        let token = await this.storage.get(this.tokenName);
+        return token;
     }
 
     public async getPayload(token?: string) {
-        token = token || await this.getToken();
+        if (!token) {
+          token = await this.getToken();
+        }
 
         if (token && token.split('.').length === 3) {
             try {
@@ -54,8 +57,9 @@ export class SharedService {
         }
 
         if (token) {
+          console.log(token);
             const expDate = await this.getExpirationDate(token);
-            await this.storage.set(this.tokenName, token, expDate ? expDate.toUTCString() : '');
+            return await this.storage.set(this.tokenName, token, expDate ? expDate.toUTCString() : '');
         }
     }
 
@@ -63,8 +67,13 @@ export class SharedService {
         await this.storage.remove(this.tokenName);
     }
 
-    public async isAuthenticated(token?: string) {
-        token = token || await this.getToken();
+    public async isAuthenticated(token?: string):Promise<boolean> {
+      console.log('token is ' + token);
+        if (!token) {
+          token = await this.getToken();
+        }
+
+        console.log('token = ' + token);
 
         // a token is present
         if (token) {
@@ -80,7 +89,7 @@ export class SharedService {
                         const isExpired = Math.round(new Date().getTime() / 1000) >= exp;
                         if (isExpired) {
                             // fail: Expired token
-                            this.storage.remove(this.tokenName);
+                            await this.storage.remove(this.tokenName);
                             return false;
                         } else {
                             // pass: Non-expired token
@@ -100,7 +109,9 @@ export class SharedService {
     }
 
     public async getExpirationDate(token?: string) {
-        token = token || await this.getToken();
+        if (!token) {
+          token = await this.getToken();
+        }
         const payload = await this.getPayload(token);
         if (payload && payload.exp && Math.round(new Date().getTime() / 1000) < payload.exp) {
             const date = new Date(0);

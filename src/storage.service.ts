@@ -52,7 +52,7 @@ export class BrowserStorageService extends StorageService {
         }
     }
 
-    public async set(key: string, value: string, date: string) {
+    public set(key: string, value: string, date: string) {
         switch (this.storageType) {
             case COOKIE:
             case SESSION_COOKIE:
@@ -69,9 +69,15 @@ export class BrowserStorageService extends StorageService {
             default:
                 break;
         }
+
+        return new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve(undefined);
+            }, 50);
+        });
     }
 
-    public async remove(key: string) {
+    public remove(key: string) {
         switch (this.storageType) {
             case COOKIE:
             case SESSION_COOKIE:
@@ -88,6 +94,12 @@ export class BrowserStorageService extends StorageService {
             default:
                 break;
         }
+
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve(undefined);
+        }, 50);
+      });
     }
 
     private checkIsStorageAvailable(storageType: StorageType) {
