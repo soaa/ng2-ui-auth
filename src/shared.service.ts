@@ -28,6 +28,7 @@ export class SharedService {
     }
 
     public async getPayload(token?: string) {
+        token = token || await this.getToken();
         if (!token) {
           token = await this.getToken();
         }
@@ -57,9 +58,8 @@ export class SharedService {
         }
 
         if (token) {
-          console.log(token);
             const expDate = await this.getExpirationDate(token);
-            return await this.storage.set(this.tokenName, token, expDate ? expDate.toUTCString() : '');
+            await this.storage.set(this.tokenName, token, expDate ? expDate.toUTCString() : '');
         }
     }
 
@@ -68,12 +68,7 @@ export class SharedService {
     }
 
     public async isAuthenticated(token?: string):Promise<boolean> {
-      console.log('token is ' + token);
-        if (!token) {
-          token = await this.getToken();
-        }
-
-        console.log('token = ' + token);
+        token = token || await this.getToken();
 
         // a token is present
         if (token) {
@@ -109,9 +104,8 @@ export class SharedService {
     }
 
     public async getExpirationDate(token?: string) {
-        if (!token) {
-          token = await this.getToken();
-        }
+        token = token || await this.getToken();
+
         const payload = await this.getPayload(token);
         if (payload && payload.exp && Math.round(new Date().getTime() / 1000) < payload.exp) {
             const date = new Date(0);
@@ -123,9 +117,10 @@ export class SharedService {
 
     public logout(): Observable<any> {
         return Observable.create((observer: Subscriber<any>) => {
-            this.storage.remove(this.tokenName);
-            observer.next();
-            observer.complete();
+            this.storage.remove(this.tokenName).then(() => {
+              observer.next();
+              observer.complete();
+            });
         });
     }
 

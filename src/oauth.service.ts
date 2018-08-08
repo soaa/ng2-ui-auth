@@ -31,15 +31,7 @@ export class OauthService {
         private popup: PopupService) { }
 
     public authenticate<T extends object | string>(name: string, userData?: any): Observable<T> {
-        const provider: IOauthService = this.config.options.providers[name].oauthType === '1.0'
-            ? Injector.create([
-                ...this.depProviders,
-                { provide: Oauth1Service, deps: this.deps },
-            ]).get(Oauth1Service)
-            : Injector.create([
-                ...this.depProviders,
-                { provide: Oauth2Service, deps: this.deps },
-            ]).get(Oauth2Service);
+        const provider: IOauthService = this.providerOf(name);
 
         return provider.open<T>(this.config.options.providers[name], userData || {})
             .switchMap((response) => {
@@ -47,11 +39,23 @@ export class OauthService {
                 // satellizer's magic by doing authorization code exchange and
                 // saving a token manually.
                 if (this.config.options.providers[name].url) {
-                    return Observable.fromPromise(this.shared.setToken(response)).map(() => response);
+                    return Observable.from(this.shared.setToken(response)).map(() => response);
                 }
 
                 return Observable.of(response);
             });
+    }
+
+    protected providerOf(name: string):IOauthService {
+      return this.config.options.providers[name].oauthType === '1.0'
+        ? Injector.create([
+          ...this.depProviders,
+          { provide: Oauth1Service, deps: this.deps },
+        ]).get(Oauth1Service)
+        : Injector.create([
+          ...this.depProviders,
+          { provide: Oauth2Service, deps: this.deps },
+        ]).get(Oauth2Service);
     }
 
     public unlink<T>(
