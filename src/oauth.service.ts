@@ -7,8 +7,8 @@ import { Oauth2Service } from './oauth2.service';
 import { SharedService } from './shared.service';
 import { joinUrl } from './utils';
 import { ConfigService, IOauth1Options } from './config.service';
-import { Observable } from 'rxjs/Observable';
-import { tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { HttpClient, HttpRequest } from '@angular/common/http';
 
 /**
@@ -34,7 +34,7 @@ export class OauthService {
         const provider: IOauthService = this.providerOf(name);
 
         return provider.open<T>(this.config.options.providers[name], userData || {})
-            .switchMap((response) => {
+            .pipe(switchMap((response) => {
                 // this is for a scenario when someone wishes to opt out from
                 // satellizer's magic by doing authorization code exchange and
                 // saving a token manually.
@@ -43,7 +43,7 @@ export class OauthService {
                 }
 
                 return Observable.of(response);
-            });
+            }));
     }
 
     protected providerOf(name: string):IOauthService {
