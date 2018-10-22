@@ -49,6 +49,11 @@ export interface IProviders {
     [provider: string]: IOauth2Options | IOauth1Options;
 }
 
+export interface Tokens {
+    accessToken: string;
+    refreshToken?: string;
+}
+
 export interface IConfigOptions {
     tokenRoot: string | null;
     cordova: boolean | null;
@@ -57,6 +62,7 @@ export interface IConfigOptions {
     signupUrl: string;
     unlinkUrl: string;
     tokenName: string;
+    refreshTokenName: string;
     tokenSeparator: string;
     tokenPrefix: string;
     authToken: string;
@@ -64,7 +70,7 @@ export interface IConfigOptions {
     storageType: StorageType;
     providers: IProviders;
     withCredentials: boolean;
-    resolveToken: (response: any, config: IConfigOptions) => string;
+    resolveToken: (response: any, config: IConfigOptions) => Tokens;
 }
 
 export interface IPartialConfigOptions { // = Partial<IConfigOptions
@@ -82,7 +88,7 @@ export interface IPartialConfigOptions { // = Partial<IConfigOptions
     storageType?: StorageType;
     providers?: IProviders;
     withCredentials?: boolean;
-    resolveToken?: (response: any, config: IConfigOptions) => string;
+    resolveToken?: (response: any, config: IConfigOptions) => Tokens;
 }
 
 export const defaultOptions: IConfigOptions = {
@@ -93,6 +99,7 @@ export const defaultOptions: IConfigOptions = {
     signupUrl: '/auth/signup',
     unlinkUrl: '/auth/unlink/',
     tokenName: 'token',
+    refreshTokenName: 'refresh_token',
     tokenSeparator: '_',
     tokenPrefix: 'ng2-ui-auth',
     authHeader: 'Authorization',
@@ -107,7 +114,7 @@ export const defaultOptions: IConfigOptions = {
             return null;
         }
         if (typeof accessToken === 'string') {
-            return accessToken;
+            return { accessToken: accessToken };
         }
         if (typeof accessToken !== 'object') {
             // console.warn('No token found');
@@ -121,8 +128,10 @@ export const defaultOptions: IConfigOptions = {
             },
             accessToken);
         const token = tokenRootData ? tokenRootData[config.tokenName] : accessToken[config.tokenName];
+        const refreshToken = tokenRootData ? tokenRootData[config.refreshTokenName] : accessToken[config.refreshTokenName];
+
         if (token) {
-            return token;
+            return { accessToken: token, refreshToken: refreshToken };
         }
         // const tokenPath = this.tokenRoot ? this.tokenRoot + '.' + this.tokenName : this.tokenName;
         // console.warn('Expecting a token named "' + tokenPath);

@@ -4,6 +4,7 @@ import { LocalService } from './local.service';
 import { OauthService } from './oauth.service';
 import { Observable } from 'rxjs/Observable';
 import { StorageType } from './storage-type.enum';
+import { Tokens } from './config.service';
 
 /**
  * Created by Ron on 17/12/2015.
@@ -48,7 +49,7 @@ export class AuthService {
         return this.shared.getToken();
     }
 
-    public setToken(token: string | object): Promise<void> {
+    public setToken(token: string | object): Promise<Tokens> {
         return this.shared.setToken(token);
     }
 

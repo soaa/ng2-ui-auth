@@ -18,9 +18,9 @@ import { of } from 'rxjs/observable/of';
 export class Oauth2Service implements IOauthService {
 
     constructor(
-        private http: HttpClient,
-        private popup: PopupService,
-        private config: ConfigService) {
+        protected http: HttpClient,
+        protected popup: PopupService,
+        protected config: ConfigService) {
     }
 
     open<T extends object | string = any>(oauthOptions: IOauth2Options, userData: object): Observable<T> {
@@ -44,7 +44,7 @@ export class Oauth2Service implements IOauthService {
         );
     }
 
-    private exchangeForToken<T>(options: IOauth2Options, authorizationData: object, oauthData: object, userData: object) {
+    protected exchangeForToken<T>(options: IOauth2Options, authorizationData: object, oauthData: object, userData: object) {
         const body = { authorizationData, oauthData, userData };
         const { baseUrl, withCredentials } = this.config.options;
         const { url, method = 'POST' } = options;
@@ -52,7 +52,7 @@ export class Oauth2Service implements IOauthService {
         return this.http.request<T>(method, exchangeForTokenUrl, { body, withCredentials });
     }
 
-    private getAuthorizationData(options: IOauth2Options) {
+    protected getAuthorizationData(options: IOauth2Options) {
         const {
             responseType = 'code',
             clientId,

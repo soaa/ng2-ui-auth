@@ -1,10 +1,11 @@
+import { TokenRefreshService } from './token.refresh.service';
 /**
  * Created by Ron on 17/12/2015.
  */
 import { Observable } from 'rxjs/Observable';
 import { Subscriber } from 'rxjs/Subscriber';
 import { Injectable } from '@angular/core';
-import { ConfigService } from './config.service';
+import { ConfigService, Tokens } from './config.service';
 import { StorageService } from './storage.service';
 import { StorageType } from './storage-type.enum';
 
@@ -18,9 +19,21 @@ export class SharedService {
         ? [this.config.options.tokenPrefix, this.config.options.tokenName].join(this.config.options.tokenSeparator)
         : this.config.options.tokenName;
 
+    public refreshTokenName = this.config.options.tokenPrefix
+        ? [this.config.options.tokenPrefix, this.config.options.refreshTokenName].join(this.config.options.tokenSeparator)
+        : this.config.options.refreshTokenName;
+
+
     constructor(
+        private tokenRefreshService: TokenRefreshService,
         private storage: StorageService,
         private config: ConfigService) { }
+
+
+    public async getRefreshToken() {
+        let refreshToken = await this.storage.get(this.refreshTokenName);
+        return refreshToken;
+    }
 
     public async getToken() {
         let token = await this.storage.get(this.tokenName);
@@ -47,20 +60,27 @@ export class SharedService {
     public async setToken(response: string | object) {
         if (!response) {
             // console.warn('Can\'t set token without passing a value');
-            return;
+            return null;
         }
 
-        let token: string;
+        let tokens: Tokens;
         if (typeof response === 'string') {
-            token = response;
+            tokens = {accessToken: response};
         } else {
-            token = this.config.options.resolveToken(response, this.config.options);
+            tokens = this.config.options.resolveToken(response, this.config.options);
         }
 
-        if (token) {
-            const expDate = await this.getExpirationDate(token);
-            await this.storage.set(this.tokenName, token, expDate ? expDate.toUTCString() : '');
+        if (tokens.accessToken) {
+            const expDate = await this.getExpirationDate(tokens.accessToken);
+            await this.storage.set(this.tokenName, tokens.accessToken, expDate ? expDate.toUTCString() : '');
         }
+
+        if (tokens.refreshToken) {
+            const expDate = await this.getExpirationDate(tokens.refreshToken);
+            await this.storage.set(this.tokenName, tokens.refreshToken, expDate ? expDate.toUTCString() : '');
+        }
+
+        return tokens;
     }
 
     public async removeToken() {
@@ -72,35 +92,61 @@ export class SharedService {
 
         // a token is present
         if (token) {
-            // token with a valid JWT format XXX.YYY.ZZZ
-            if (token.split('.').length === 3) {
-                // could be a valid JWT or an access token with the same format
-                try {
-                    const base64Url = token.split('.')[1];
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const exp = JSON.parse(this.b64DecodeUnicode(base64)).exp;
-                    // jwt with an optional expiration claims
-                    if (exp) {
-                        const isExpired = Math.round(new Date().getTime() / 1000) >= exp;
-                        if (isExpired) {
-                            // fail: Expired token
-                            await this.storage.remove(this.tokenName);
-                            return false;
-                        } else {
-                            // pass: Non-expired token
-                            return true;
-                        }
+            if (this.isValidToken(token)) {
+                return true;
+            } else {
+                let refreshToken = await this.getRefreshToken();
+                if (refreshToken) {
+                    if (await this.isValidToken(refreshToken)) {
+                        return await new Promise<boolean>((resolve, reject) => {
+                            this.tokenRefreshService.requestTokenRefresh<any>(refreshToken).subscribe(async (response) => {
+                                const tokens = await this.setToken(response);
+                                if (tokens) {
+                                    resolve(await this.isValidToken(tokens.accessToken));
+                                } else resolve(false);
+                            }
+                            , (e) => reject(e));
+                        });
                     }
-                } catch (e) {
-                    // pass: Non-JWT token that looks like JWT
-                    return true;
+                    await this.storage.remove(this.refreshTokenName);
                 }
+
+                await this.storage.remove(this.tokenName);
+
+                return false;
             }
-            // pass: All other tokens
-            return true;
         }
         // lail: No token at all
         return false;
+    }
+
+    async isValidToken(token: string):Promise<boolean> {
+        // token with a valid JWT format XXX.YYY.ZZZ
+        if (token.split('.').length === 3) {
+            // could be a valid JWT or an access token with the same format
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const exp = JSON.parse(this.b64DecodeUnicode(base64)).exp;
+                // jwt with an optional expiration claims
+                if (exp) {
+                    const isExpired = Math.round(new Date().getTime() / 1000) >= exp;
+                    if (isExpired) {
+                        // fail: Expired token
+                        await this.storage.remove(this.tokenName);
+                        return false;
+                    } else {
+                        // pass: Non-expired token
+                        return true;
+                    }
+                }
+            } catch (e) {
+                // pass: Non-JWT token that looks like JWT
+                return true;
+            }
+        }
+        // pass: All other tokens
+        return true;
     }
 
     public async getExpirationDate(token?: string) {

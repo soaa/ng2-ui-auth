@@ -1,3 +1,4 @@
+import { TokenRefreshService } from './token.refresh.service';
 /**
  * Created by Ron on 25/12/2015.
  */
@@ -30,6 +31,7 @@ export class Ng2UiAuthModule {
                 { provide: PopupService, useClass: PopupService, deps: [ConfigService] },
                 { provide: LocalService, useClass: LocalService, deps: [HttpClient, SharedService, ConfigService] },
                 { provide: AuthService, useClass: AuthService, deps: [SharedService, LocalService, OauthService] },
+                { provide: TokenRefreshService, useClass: TokenRefreshService, deps: [] }
             ],
         };
     }
