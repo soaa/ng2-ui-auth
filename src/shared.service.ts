@@ -91,33 +91,29 @@ export class SharedService {
         token = token || await this.getToken();
 
         // a token is present
-        if (token) {
-            if (this.isValidToken(token)) {
+            if (token && await this.isValidToken(token)) {
                 return true;
-            } else {
-                let refreshToken = await this.getRefreshToken();
-                if (refreshToken) {
-                    if (await this.isValidToken(refreshToken)) {
-                        return await new Promise<boolean>((resolve, reject) => {
-                            this.tokenRefreshService.requestTokenRefresh<any>(refreshToken).subscribe(async (response) => {
-                                const tokens = await this.setToken(response);
-                                if (tokens) {
-                                    resolve(await this.isValidToken(tokens.accessToken));
-                                } else resolve(false);
-                            }
-                            , (e) => reject(e));
-                        });
-                    }
-                    await this.storage.remove(this.refreshTokenName);
-                }
-
-                await this.storage.remove(this.tokenName);
-
-                return false;
             }
-        }
-        // lail: No token at all
-        return false;
+
+            let refreshToken = await this.getRefreshToken();
+            if (refreshToken) {
+                if (await this.isValidToken(refreshToken)) {
+                    return await new Promise<boolean>((resolve, reject) => {
+                        this.tokenRefreshService.requestTokenRefresh<any>(refreshToken).subscribe(async (response) => {
+                            const tokens = await this.setToken(response);
+                            if (tokens) {
+                                resolve(await this.isValidToken(tokens.accessToken));
+                            } else resolve(false);
+                        }
+                        , (e) => reject(e));
+                    });
+                }
+                await this.storage.remove(this.refreshTokenName);
+            }
+
+            if (token) await this.storage.remove(this.tokenName);
+
+            return false;
     }
 
     async isValidToken(token: string):Promise<boolean> {
@@ -133,7 +129,6 @@ export class SharedService {
                     const isExpired = Math.round(new Date().getTime() / 1000) >= exp;
                     if (isExpired) {
                         // fail: Expired token
-                        await this.storage.remove(this.tokenName);
                         return false;
                     } else {
                         // pass: Non-expired token
