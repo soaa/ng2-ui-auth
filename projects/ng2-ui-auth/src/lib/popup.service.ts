@@ -1,3 +1,4 @@
+/* tslint:disable:no-shadowed-variable */
 import { Injectable } from '@angular/core';
 import { empty, fromEvent, interval, merge, Observable, of, throwError } from 'rxjs';
 import { delay, map, switchMap, take } from 'rxjs/operators';

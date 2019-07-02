@@ -35,6 +35,10 @@ export interface IOauth2Options {
 export interface IProviders {
     [provider: string]: IOauth2Options | IOauth1Options;
 }
+export interface Tokens {
+    accessToken: string;
+    refreshToken?: string;
+}
 export interface IConfigOptions {
     tokenRoot: string | null;
     cordova: boolean | null;
@@ -43,6 +47,7 @@ export interface IConfigOptions {
     signupUrl: string;
     unlinkUrl: string;
     tokenName: string;
+    refreshTokenName: string;
     tokenSeparator: string;
     tokenPrefix: string;
     authToken: string;
@@ -50,7 +55,7 @@ export interface IConfigOptions {
     storageType: StorageType;
     providers: IProviders;
     withCredentials: boolean;
-    resolveToken: (response: any, config: IConfigOptions) => string;
+    resolveToken: (response: any, config: IConfigOptions) => Tokens;
 }
 export interface IPartialConfigOptions {
     tokenRoot?: string | null;
@@ -60,6 +65,7 @@ export interface IPartialConfigOptions {
     signupUrl?: string;
     unlinkUrl?: string;
     tokenName?: string;
+    refreshTokenName?: string;
     tokenSeparator?: string;
     tokenPrefix?: string;
     authToken?: string;
@@ -67,5 +73,5 @@ export interface IPartialConfigOptions {
     storageType?: StorageType;
     providers?: IProviders;
     withCredentials?: boolean;
-    resolveToken?: (response: any, config: IConfigOptions) => string;
+    resolveToken?: (response: any, config: IConfigOptions) => Tokens;
 }

@@ -10,6 +10,8 @@ export declare class Oauth2Service implements IOauthService {
     private config;
     constructor(http: HttpClient, popup: PopupService, config: ConfigService);
     open<T extends object | string = any>(oauthOptions: IOauth2Options, userData: object): Observable<T>;
-    private exchangeForToken;
-    private getAuthorizationData;
+    protected exchangeForToken<T>(options: IOauth2Options, authorizationData: object, oauthData: object, userData: object): Observable<T>;
+    protected getAuthorizationData(options: IOauth2Options): {
+        [key: string]: string;
+    };
 }

@@ -7,9 +7,9 @@ export declare class BrowserStorageService extends StorageService {
     private storageType;
     constructor(config: ConfigService);
     updateStorageType(storageType: StorageType): boolean;
-    get(key: string): string;
-    set(key: string, value: string, date: string): void;
-    remove(key: string): void;
+    get(key: string): Promise<any>;
+    set(key: string, value: string, date: string): Promise<void>;
+    remove(key: string): Promise<void>;
     private checkIsStorageAvailable;
     private isWindowStorageAvailable;
     private isCookieStorageAvailable;

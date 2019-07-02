@@ -1,9 +1,9 @@
 import { Injectable, Injector } from '@angular/core';
 import { joinUrl } from './utils';
-import { tap } from 'rxjs/operators';
+import {mapTo, switchMap, switchMapTo, tap} from 'rxjs/operators';
 import { Oauth1Service } from './oauth1.service';
 import { Oauth2Service } from './oauth2.service';
-import { Observable } from 'rxjs';
+import {from, Observable, of} from 'rxjs';
 import { PopupService } from './popup.service';
 import { ConfigService } from './config.service';
 import { SharedService } from './shared.service';
@@ -22,21 +22,26 @@ export class OauthService {
   constructor(private http: HttpClient, private shared: SharedService, private config: ConfigService, private popup: PopupService) {}
 
   public authenticate<T extends object | string>(name: string, userData?: any): Observable<T> {
-    const provider: IOauthService =
-      this.config.options.providers[name].oauthType === '1.0'
-        ? Injector.create([...this.depProviders, { provide: Oauth1Service, deps: this.deps }]).get(Oauth1Service)
-        : Injector.create([...this.depProviders, { provide: Oauth2Service, deps: this.deps }]).get(Oauth2Service);
+    const provider: IOauthService = this.providerOf(name);
 
     return provider.open<T>(this.config.options.providers[name], userData || {}).pipe(
-      tap(response => {
+      switchMap(response => {
         // this is for a scenario when someone wishes to opt out from
         // satellizer's magic by doing authorization code exchange and
         // saving a token manually.
         if (this.config.options.providers[name].url) {
-          this.shared.setToken(response);
+          return from(this.shared.setToken(response)).pipe(mapTo(response));
         }
+
+        return of(response);
       })
     );
+  }
+
+  protected providerOf(name: string): IOauthService {
+    return this.config.options.providers[name].oauthType === '1.0'
+      ? Injector.create({ providers: [...this.depProviders, { provide: Oauth1Service, deps: this.deps }] }).get(Oauth1Service)
+      : Injector.create({ providers: [...this.depProviders, { provide: Oauth2Service, deps: this.deps }] }).get(Oauth2Service);
   }
 
   public unlink<T>(provider: string, url = joinUrl(this.config.options.baseUrl, this.config.options.unlinkUrl), method = 'POST') {

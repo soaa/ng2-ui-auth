@@ -36,7 +36,7 @@ export class Oauth2Service implements IOauthService {
     );
   }
 
-  private exchangeForToken<T>(options: IOauth2Options, authorizationData: object, oauthData: object, userData: object) {
+  protected exchangeForToken<T>(options: IOauth2Options, authorizationData: object, oauthData: object, userData: object) {
     const body = { authorizationData, oauthData, userData };
     const { baseUrl, withCredentials } = this.config.options;
     const { url, method = 'POST' } = options;
@@ -44,7 +44,7 @@ export class Oauth2Service implements IOauthService {
     return this.http.request<T>(method, exchangeForTokenUrl, { body, withCredentials });
   }
 
-  private getAuthorizationData(options: IOauth2Options) {
+  protected getAuthorizationData(options: IOauth2Options) {
     const {
       responseType = 'code',
       clientId,

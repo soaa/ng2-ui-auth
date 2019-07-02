@@ -14,11 +14,11 @@ export declare class AuthService {
     authenticate<T extends object | string = any>(name: string, userData?: any): Observable<T>;
     link<T extends object | string = any>(name: string, userData?: any): Observable<T>;
     unlink<T = any>(provider: string, url?: string): Observable<T>;
-    isAuthenticated(): boolean;
-    getToken(): string | null;
-    setToken(token: string | object): void;
-    removeToken(): void;
-    getPayload(): any;
-    setStorageType(type: StorageType): boolean;
-    getExpirationDate(): Date | null;
+    isAuthenticated(): Promise<boolean>;
+    getToken(): Promise<string | null>;
+    setToken(token: string | object): Promise<void>;
+    removeToken(): Promise<void>;
+    getPayload(): Promise<any>;
+    setStorageType(type: StorageType): Promise<boolean>;
+    getExpirationDate(): Promise<Date | null>;
 }

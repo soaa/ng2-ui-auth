@@ -24,23 +24,23 @@ export class BrowserStorageService extends StorageService {
     return true;
   }
 
-  public get(key: string) {
+  public async get(key: string) {
     switch (this.storageType) {
       case StorageType.COOKIE:
       case StorageType.SESSION_COOKIE:
-        return this.getCookie(key);
+        return Promise.resolve(this.getCookie(key));
       case StorageType.LOCAL_STORAGE:
       case StorageType.SESSION_STORAGE:
-        return window[this.storageType].getItem(key);
+        return Promise.resolve(window[this.storageType].getItem(key));
       case StorageType.MEMORY:
-        return this.store[key];
+        return Promise.resolve(this.store[key]);
       case StorageType.NONE:
       default:
-        return null;
+        return Promise.resolve(null);
     }
   }
 
-  public set(key: string, value: string, date: string) {
+  public async set(key: string, value: string, date: string) {
     switch (this.storageType) {
       case StorageType.COOKIE:
       case StorageType.SESSION_COOKIE:
@@ -59,7 +59,7 @@ export class BrowserStorageService extends StorageService {
     }
   }
 
-  public remove(key: string) {
+  public async remove(key: string) {
     switch (this.storageType) {
       case StorageType.COOKIE:
       case StorageType.SESSION_COOKIE:

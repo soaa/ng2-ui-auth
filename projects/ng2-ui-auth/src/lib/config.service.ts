@@ -1,12 +1,12 @@
 import { Inject, Injectable, InjectionToken } from '@angular/core';
-import { IConfigOptions, IPartialConfigOptions, IProviders } from './config-interfaces';
+import {IConfigOptions, IPartialConfigOptions, IProviders, Tokens} from './config-interfaces';
 import { defaultProviders } from './config-providers';
 import { StorageType } from './storage-type.enum';
 
 export const CONFIG_OPTIONS = new InjectionToken<any>('config.options');
 @Injectable()
 export class ConfigService {
-  public options = {
+  public options  = {
     withCredentials: false,
     tokenRoot: null,
     baseUrl: '/',
@@ -14,6 +14,7 @@ export class ConfigService {
     signupUrl: '/auth/signup',
     unlinkUrl: '/auth/unlink/',
     tokenName: 'token',
+    refreshTokenName: 'refresh_token',
     tokenSeparator: '_',
     tokenPrefix: 'ng2-ui-auth',
     authHeader: 'Authorization',
@@ -28,7 +29,9 @@ export class ConfigService {
         return null;
       }
       if (typeof accessToken === 'string') {
-        return accessToken;
+        // tslint:disable-next-line:no-shadowed-variable
+        const refreshToken = response[config.refreshTokenName];
+        return <Tokens>{ accessToken: accessToken, refreshToken: refreshToken };
       }
       if (typeof accessToken !== 'object') {
         // console.warn('No token found');
@@ -40,9 +43,12 @@ export class ConfigService {
           return o[x];
         }, accessToken);
       const token = tokenRootData ? tokenRootData[config.tokenName] : accessToken[config.tokenName];
+      const refreshToken = tokenRootData ? tokenRootData[config.refreshTokenName] : accessToken[config.refreshTokenName];
+
       if (token) {
-        return token;
+        return <Tokens>{ accessToken: token, refreshToken: refreshToken };
       }
+
       // const tokenPath = this.tokenRoot ? this.tokenRoot + '.' + this.tokenName : this.tokenName;
       // console.warn('Expecting a token named "' + tokenPath);
       return null;
