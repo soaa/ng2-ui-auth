@@ -11,6 +11,7 @@ import { HttpClient } from '@angular/common/http';
 import { PopupService } from './popup.service';
 import { LocalService } from './local.service';
 import { AuthService } from './auth.service';
+import { TokenRefreshService } from '../public_api';
 
 @NgModule({
   imports: [HttpClientModule],
@@ -25,7 +26,7 @@ export class Ng2UiAuthModule {
         ...(configOptions ? [{ provide: CONFIG_OPTIONS, useValue: configOptions }] : []),
         { provide: ConfigService, useClass: ConfigService, deps: [CONFIG_OPTIONS] },
         { provide: StorageService, useClass: BrowserStorageService, deps: [ConfigService] },
-        { provide: SharedService, useClass: SharedService, deps: [StorageService, ConfigService] },
+        { provide: SharedService, useClass: SharedService, deps: [StorageService, ConfigService, TokenRefreshService] },
         { provide: LocalService, useClass: LocalService, deps: [HttpClient, SharedService, ConfigService] },
         { provide: PopupService, useClass: PopupService, deps: [ConfigService] },
         { provide: OauthService, useClass: OauthService, deps: [HttpClient, SharedService, ConfigService, PopupService] },

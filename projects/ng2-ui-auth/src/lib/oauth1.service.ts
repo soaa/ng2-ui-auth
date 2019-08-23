@@ -10,7 +10,7 @@ import { buildQueryString, joinUrl } from './utils';
 
 @Injectable()
 export class Oauth1Service implements IOauthService {
-  constructor(private http: HttpClient, private popup: PopupService, private config: ConfigService) {}
+  constructor(protected http: HttpClient, protected popup: PopupService, protected config: ConfigService) {}
 
   open<T extends object | string = any>(oauthOptions: IOauth1Options, userData: object): Observable<T> {
     const serverUrl = this.config.options.baseUrl ? joinUrl(this.config.options.baseUrl, oauthOptions.url) : oauthOptions.url;

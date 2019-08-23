@@ -10,7 +10,7 @@ import { buildQueryString, getWindowOrigin, joinUrl } from './utils';
 
 @Injectable()
 export class Oauth2Service implements IOauthService {
-  constructor(private http: HttpClient, private popup: PopupService, private config: ConfigService) {}
+  constructor(protected http: HttpClient, protected popup: PopupService, protected config: ConfigService) {}
 
   open<T extends object | string = any>(oauthOptions: IOauth2Options, userData: object): Observable<T> {
     const authorizationData = this.getAuthorizationData(oauthOptions);

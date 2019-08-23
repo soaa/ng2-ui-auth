@@ -12,14 +12,14 @@ import { IOauthService } from './oauth-service';
 
 @Injectable()
 export class OauthService {
-  readonly depProviders = [
+  protected readonly depProviders = [
     { provide: HttpClient, useValue: this.http },
     { provide: PopupService, useValue: this.popup },
     { provide: ConfigService, useValue: this.config }
   ];
-  readonly deps = [HttpClient, PopupService, ConfigService];
+  protected readonly deps = [HttpClient, PopupService, ConfigService];
 
-  constructor(private http: HttpClient, private shared: SharedService, private config: ConfigService, private popup: PopupService) {}
+  constructor(protected http: HttpClient, protected shared: SharedService, protected config: ConfigService, protected popup: PopupService) {}
 
   public authenticate<T extends object | string>(name: string, userData?: any): Observable<T> {
     const provider: IOauthService = this.providerOf(name);

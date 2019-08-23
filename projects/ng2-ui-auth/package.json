@@ -1,5 +1,5 @@
 {
-  "name": "ng2-ui-auth",
+  "name": "@soaa/ng2-ui-auth",
   "version": "9.2.1",
   "peerDependencies": {
     "@angular/common": "^6.0.0-rc.0 || ^6.0.0 || ^7.0.0",
